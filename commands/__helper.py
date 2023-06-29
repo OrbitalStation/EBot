@@ -36,15 +36,11 @@ def update_single_field(bot, message, value, field_name, field_human_name):
     db.update_user(message.from_user.id, **{field_name: f'"{value}"'})
 
 
-SetterCallbackType = Callable[[TeleBot, Message], None]
-
-
 def setter(
         field: str,
         name_key: str,
         *,
         extra_info_key: str | None = None,
-        custom_ending: SetterCallbackType | None = None
 ):
     def inner_decorator(validate):
         def inner(bot, message):
@@ -56,11 +52,7 @@ def setter(
 
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             if extra_info_key is not None:
-                assert custom_ending is None
                 message = bot.send_message(message.chat.id, const(extra_info_key))
                 bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
-            elif custom_ending is not None:
-                assert extra_info_key is None
-                custom_ending(bot, message)
         return inner
     return inner_decorator

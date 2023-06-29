@@ -8,4 +8,4 @@ register_all_commands(bot)
 register_all_listeners(bot)
 
 if __name__ == '__main__':
-    bot.polling(none_stop=True, interval=0)
+    bot.infinity_polling(timeout=40)

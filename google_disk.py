@@ -12,6 +12,8 @@ def get_drive_service(bot, message):
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
     flow = get_flow(bot, message, user.google_disk_client_secrets, const("googleOauth2Scope"))
+    if flow is None:
+        return
     credentials = flow.step2_exchange(user.google_disk_credentials)
     http = httplib2.Http()
     credentials.authorize(http)
