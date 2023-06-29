@@ -5,7 +5,7 @@ from google_disk import get_flow
 import database as db
 
 
-def _update(bot, message):
+def _update(bot, _message):
     def update(answer):
         update_single_field(bot, answer, answer.text, "google_disk_credentials", const('botHumanGDCredentials'))
     return update

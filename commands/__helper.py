@@ -43,7 +43,7 @@ def setter(
     def inner_decorator(validate):
         def inner(bot, message):
             def update(answer):
-                update_single_field(bot, message, answer.text, field, name)
+                update_single_field(bot, answer, answer.text, field, name)
             name = const(name_key)
             db.create_table_if_not_exists()
             db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=False)
@@ -53,8 +53,8 @@ def setter(
                 message = bot.send_message(message.chat.id, const(extra_info_key))
                 if info_attachment_path is not None:
                     attachment = const(info_attachment_path)
-                    with open(attachment, "rb") as file:
+                    with open(attachment, "rb", encoding="utf-8") as file:
                         message = bot.send_document(message.chat.id, file, attachment)
-                bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
+            bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
         return inner
     return inner_decorator
