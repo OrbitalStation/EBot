@@ -5,9 +5,10 @@ from google_disk import get_flow
 import database as db
 
 
-def _update(bot, _message):
+def _update(bot, flow):
     def update(answer):
-        update_single_field(bot, answer, answer.text, "google_disk_credentials", const('botHumanGDCredentials'))
+        credentials = flow.step2_exchange(answer.text).to_json()
+        update_single_field(bot, answer, credentials, "google_disk_credentials", const('botHumanGDCredentials'))
     return update
 
 
@@ -21,5 +22,5 @@ def command(bot, message):
     authorize_url = flow.step1_get_authorize_url()
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1") + ' ' + authorize_url)
     message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo2"))
-    bot.register_next_step_handler(message, user_answered(bot, _update(bot, message), message, None,
+    bot.register_next_step_handler(message, user_answered(bot, _update(bot, flow), message, None,
                                                           const("botHumanGDCredentials")))

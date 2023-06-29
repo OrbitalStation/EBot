@@ -1,25 +1,24 @@
 import json
-
 import googleapiclient
 import httplib2
-import oauth2client
-from googleapiclient.errors import HttpError
-
 import database as db
+from googleapiclient.errors import HttpError
 from json import JSONDecodeError
-from oauth2client import clientsecrets
-from oauth2client.client import OAuth2WebServerFlow
+from oauth2client import clientsecrets, file
+from oauth2client.client import OAuth2WebServerFlow, Credentials
 from googleapiclient.discovery import build
 from properties import const
 
 
 def get_drive_service(bot, message):
+    # tools.run_flow
+    # file.Storage
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
-    flow = get_flow(bot, message, user.google_disk_client_secrets, const("googleOauth2Scope"))
-    if flow is None:
-        return None
-    credentials = flow.step2_exchange(user.google_disk_credentials)
+    # flow = get_flow(bot, message, user.google_disk_client_secrets, const("googleOauth2Scope"))
+    # if flow is None:
+    #     return None
+    credentials = Credentials.new_from_json(user.google_disk_credentials)
     http = httplib2.Http()
     credentials.authorize(http)
     return build('drive', 'v3', http=http)
@@ -51,8 +50,11 @@ def get_flow(bot, message, client_secrets, scope) -> OAuth2WebServerFlow | None:
                 'prompt'
             )
             for param in optional:
-                if locals()[param] is not None:
-                    constructor_kwargs[param] = locals()[param]
+                try:
+                    if locals()[param] is not None:
+                        constructor_kwargs[param] = locals()[param]
+                except KeyError:
+                    pass
 
             return OAuth2WebServerFlow(
                 cs_info['client_id'], cs_info['client_secret'],

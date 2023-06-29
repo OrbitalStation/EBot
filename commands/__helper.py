@@ -53,7 +53,7 @@ def setter(
                 message = bot.send_message(message.chat.id, const(extra_info_key))
                 if info_attachment_path is not None:
                     attachment = const(info_attachment_path)
-                    with open(attachment, "rb", encoding="utf-8") as file:
+                    with open(attachment, "rb") as file:
                         message = bot.send_document(message.chat.id, file, attachment)
             bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
         return inner
