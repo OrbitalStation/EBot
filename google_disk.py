@@ -164,7 +164,7 @@ def make_bot_folder(bot, message, service):
 
 
 def check_bot_folder_exists(bot, message, service):
-    return check_folder_exists(bot, message, const("botFolderName"))
+    return check_folder_exists(bot, message, service, const("botFolderName"))
 
 
 def check_folder_exists(bot, message, service, folder_name):
@@ -188,6 +188,6 @@ def check_folder_exists(bot, message, service, folder_name):
 
     except HttpError as error:
         print(F'An error occurred: {error}')
-        folders = None
+        return None
 
     return len(folders) != 0
