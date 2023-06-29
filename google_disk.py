@@ -51,8 +51,11 @@ def get_flow(bot, message, client_secrets, scope) -> OAuth2WebServerFlow | None:
                 'prompt'
             )
             for param in optional:
-                if locals()[param] is not None:
-                    constructor_kwargs[param] = locals()[param]
+                try:
+                    if locals()[param] is not None:
+                        constructor_kwargs[param] = locals()[param]
+                except KeyError:
+                    pass
 
             return OAuth2WebServerFlow(
                 cs_info['client_id'], cs_info['client_secret'],
