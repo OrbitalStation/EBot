@@ -97,7 +97,7 @@ def upload_from_message(bot, message, **kwargs):
 
 def upload_file(bot, message, filepath, title='Generic', description='Uploaded by EmailBot'):
     # filepath: Path to the file to upload.
-    print(db.fetch_user(message.chat.id).bot_folder_id)
+
     if not check_bot_folder_exists(bot, message):
         print("Folder not found, making new folder...")
         folder_id = make_bot_folder(bot, message)
