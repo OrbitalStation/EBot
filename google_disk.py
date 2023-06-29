@@ -74,7 +74,7 @@ def upload_from_message(bot, message, **kwargs):
     """ Uploads content from message to Google Drive.
     bot: the bot
     message: message with photo or document
-    **kwargs: custom title or description for file
+    **kwargs: custom filename or description for file
     Returns: id of the uploaded file
     """
     if message.content_type == "photo":
@@ -95,18 +95,18 @@ def upload_from_message(bot, message, **kwargs):
     return uploaded_id
 
 
-def upload_file(bot, message, filepath, title='Generic', description='Uploaded by EmailBot'):
+def upload_file(bot, message, filepath, filename='Generic', description='Uploaded by EmailBot'):
     # filepath: Path to the file to upload.
 
-    if not check_bot_folder_exists(bot, message):
+    service = get_drive_service(bot, message)
+
+    if not check_bot_folder_exists(bot, message, service):
         print("Folder not found, making new folder...")
-        folder_id = make_bot_folder(bot, message)
+        folder_id = make_bot_folder(bot, message, service)
         db.update_user(message.chat.id, bot_folder_id=folder_id)
     else:
         # Warning! Fetched id might be invalid (there are no checks)
         folder_id = db.fetch_user(message.chat.id).bot_folder_id
-
-    drive_service = get_drive_service(bot, message)
 
     # Insert a file. Files are comprised of contents and metadata.
     # MediaFileUpload abstracts uploading file contents from a file on disk.
@@ -117,14 +117,14 @@ def upload_file(bot, message, filepath, title='Generic', description='Uploaded b
     )
     # The body contains the metadata for the file.
     body = {
-        'name': title,
+        'name': filename,
         'description': description,  # Unnecessary field
         'parents': [folder_id]
     }
 
     # Perform the request and print the result.
     try:
-        new_file = drive_service.files().create(
+        new_file = service.files().create(
             uploadType="resumable",
             body=body,
             media_body=media_body
@@ -133,22 +133,20 @@ def upload_file(bot, message, filepath, title='Generic', description='Uploaded b
         # For downloading bytes:
         # request = drive_service.files().get_media(fileId=new_file.get("id")).execute()
 
-        drive_service.close()
-        if file_title == title:
+        service.close()
+        if file_title == filename:
             print(f"File is uploaded : {new_file}")
             return new_file.get('id')
         else:
-            print(f"Upload may be unsuccessful!\n{file_title} ~:~ {title}")
+            print(f"Upload may be unsuccessful!\n{file_title} ~:~ {filename}")
 
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')
 
 
-def make_bot_folder(bot, message):
+def make_bot_folder(bot, message, service):
     try:
-        # create drive api client
-        service = get_drive_service(bot, message)
         file_metadata = {
             'name': const("botFolderName"),
             'mimeType': 'application/vnd.google-apps.folder'
@@ -165,14 +163,12 @@ def make_bot_folder(bot, message):
         return None
 
 
-def check_bot_folder_exists(bot, message):
+def check_bot_folder_exists(bot, message, service):
     return check_folder_exists(bot, message, const("botFolderName"))
 
 
-def check_folder_exists(bot, message, folder_name):
+def check_folder_exists(bot, message, service, folder_name):
     try:
-        # create drive api client
-        service = get_drive_service(bot, message)
         folders = []
         page_token = None
         while True:
@@ -184,7 +180,7 @@ def check_folder_exists(bot, message, folder_name):
                                             pageToken=page_token).execute()
             for folder in response.get('files', []):
                 # Process change
-                print(F'Found folder: {folder.get("name")}, {folder.get("id")}')
+                print(F'Folder found: {folder.get("name")}, {folder.get("id")}')
             folders.extend(response.get('files', []))
             page_token = response.get('nextPageToken', None)
             if page_token is None or len(folders) != 0:
