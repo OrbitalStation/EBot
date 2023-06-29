@@ -1,8 +1,5 @@
 from properties import const
 import database as db
-from typing import Callable
-from telebot.types import Message
-from telebot import TeleBot
 
 
 def getter(field: str, name_key: str):
@@ -41,6 +38,7 @@ def setter(
         name_key: str,
         *,
         extra_info_key: str | None = None,
+        info_attachment_path: str | None = None
 ):
     def inner_decorator(validate):
         def inner(bot, message):
@@ -53,6 +51,10 @@ def setter(
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             if extra_info_key is not None:
                 message = bot.send_message(message.chat.id, const(extra_info_key))
+                if info_attachment_path is not None:
+                    attachment = const(info_attachment_path)
+                    with open(attachment, "rb") as file:
+                        message = bot.send_document(message.chat.id, file, attachment)
                 bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
         return inner
     return inner_decorator
