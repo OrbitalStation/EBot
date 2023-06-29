@@ -19,8 +19,9 @@ def _vercode(bot, message):
 
 def _update(bot, message, flow):
     def update(answer):
-        credentials = flow.step2_exchange(answer.text)
-        update_single_field(bot, message, credentials, "google_disk_credentials", const('botHumanGDCredentials'))
+        credentials = flow.step2_exchange()
+
+        update_single_field(bot, message, answer.text, "google_disk_credentials", const('botHumanGDCredentials'))
     return update
 
 
