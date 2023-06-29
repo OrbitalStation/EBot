@@ -1,5 +1,10 @@
 import json
+
+import googleapiclient
 import httplib2
+import oauth2client
+from googleapiclient.errors import HttpError
+
 import database as db
 from json import JSONDecodeError
 from oauth2client import clientsecrets
@@ -13,7 +18,7 @@ def get_drive_service(bot, message):
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
     flow = get_flow(bot, message, user.google_disk_client_secrets, const("googleOauth2Scope"))
     if flow is None:
-        return
+        return None
     credentials = flow.step2_exchange(user.google_disk_credentials)
     http = httplib2.Http()
     credentials.authorize(http)
@@ -58,29 +63,36 @@ def get_flow(bot, message, client_secrets, scope) -> OAuth2WebServerFlow | None:
         bot.send_message(message.chat.id, const("googleOAuth2UnsupportedFlowErr") + ' ' + cs_type)
     return None
 
-# from pydrive.auth import GoogleAuth
-# from pydrive.drive import GoogleDrive
-#
-#
-# gauth = GoogleAuth()
-# gauth.LocalWebserverAuth()
-#
-#
-# def upload(path, filename):
-#     try:
-#         drive = GoogleDrive(gauth)
-#
-#         file = drive.CreateFile({'title': f'{filename}'})
-#         file.SetContentFile(path)
-#         file.Upload()
-#         file.InsertPermission({
-#             'type': 'anyone',
-#             'value': 'anyone',
-#             'role': 'reader'})
-#         link = file['alternateLink']
-#         file = None
-#
-#         return link
-#
-#     except Exception:
-#         return False
+
+def upload_file(bot, message, file='document.txt', title='My New Text Document', description='A shiny new text document about hello world.',
+                mimetype='text/plain'):
+    # file: Path to the file to upload.
+
+    drive_service = get_drive_service(bot, message)
+
+    # Insert a file. Files are comprised of contents and metadata.
+    # MediaFileUpload abstracts uploading file contents from a file on disk.
+    media_body = googleapiclient.http.MediaFileUpload(
+        file,
+        mimetype=mimetype,
+        resumable=True
+    )
+    # The body contains the metadata for the file.
+    body = {
+        'title': title,
+        'description': description,
+    }
+
+    # Perform the request and print the result.
+    try:
+        new_file = drive_service.files().insert(
+            body=body, media_body=media_body).execute()
+        file_title = new_file.get('title')
+        file_desc = new_file.get('description')
+        if file_title == title and file_desc == description:
+            print(f"File is uploaded \nTitle : {file_title}  \nDescription : {file_desc}")
+            return True
+
+    except HttpError as error:
+        # TODO(developer) - Handle errors from drive API.
+        print(f'An error occurred: {error}')
