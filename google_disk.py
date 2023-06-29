@@ -21,7 +21,7 @@ def get_drive_service(bot, message):
     credentials = Credentials.new_from_json(user.google_disk_credentials)
     http = httplib2.Http()
     credentials.authorize(http)
-    return build('drive', 'v3', http=http)
+    return build('drive', 'v2', http=http)
 
 
 # noinspection PyProtectedMember
