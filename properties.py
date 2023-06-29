@@ -11,6 +11,8 @@ def load_properties(dirpath: str, sep: str = '=', comment_char: str = '#'):
     global _props
 
     for filepath in listdir(dirpath):
+        if not filepath.endswith('.properties'):
+            continue
         file = concat_strings(dirpath + '/' + filepath)
         for line in file.split("\n"):
             line = line.strip()

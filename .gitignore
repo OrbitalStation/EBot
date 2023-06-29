@@ -1,5 +1,6 @@
 .idea
 .vscode
+venv
 __pycache__
 
 assets/users.db

@@ -6,3 +6,4 @@ def command(bot, message):
         if line != "":
             bot.send_message(message.chat.id, ('/' if idx > 0 else "") + line)
     bot.send_message(message.chat.id, const("botHelpForwardCmd"))
+    bot.send_message(message.chat.id, const("botHelpWhatIfErrorCmd"))

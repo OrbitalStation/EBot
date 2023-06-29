@@ -14,6 +14,7 @@ class User:
     # Primary key
     uid: int
     email: str
+    google_disk_client_secrets: str
 
 
 ufields = User.__dict__['__annotations__']
@@ -26,8 +27,7 @@ def create_table_if_not_exists():
 
 
 def create_user_if_not_exists_and_fetch_if_needed(uid: int, do_fetch: bool) -> User:
-    fetched = fetch_user(uid)
-    if fetched is None:
+    if (fetched := fetch_user(uid)) is None:
         fields, values = zip(*[(field, ty()) for field, ty in ufields.items() if field != 'uid'])
         placeholders = ('?,' * len(ufields))[:-1]
         _mutate(f"INSERT INTO {const('dbTableName')} (uid, {', '.join(fields)}) VALUES({placeholders});",
@@ -43,8 +43,10 @@ def update_user(uid: int, **kwargs):
     _mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = {uid}')
 
 
-def fetch_user(uid: int) -> User:
-    return User(*_fetch(f"SELECT * FROM {const('dbTableName')} WHERE uid=?", (uid,)).fetchone())
+def fetch_user(uid: int) -> User | None:
+    if (fetched := _fetch(f"SELECT * FROM {const('dbTableName')} WHERE uid=?", (uid,)).fetchone()) is None:
+        return
+    return User(*fetched)
 
 
 def _mutate(request: str, *args, **kwargs):
