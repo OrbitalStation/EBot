@@ -15,6 +15,7 @@ class User:
     uid: int
     email: str
     google_disk_client_secrets: str
+    google_disk_credentials: str
 
 
 ufields = User.__dict__['__annotations__']
