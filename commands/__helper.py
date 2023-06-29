@@ -23,7 +23,7 @@ def user_answered(bot, update, message, validate, name):
         if answer.text is None or answer.text == "":
             bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
             return
-        answer.text = answer.text.replace('"', '\\"').strip()
+        answer.text = answer.text.strip()
         if validate is not None:
             if not validate(answer.text):
                 return
@@ -33,7 +33,7 @@ def user_answered(bot, update, message, validate, name):
 
 def update_single_field(bot, message, value, field_name, field_human_name):
     bot.send_message(message.chat.id, const("botUserSetterSuccessCmd") % field_human_name + ' ' + value)
-    db.update_user(message.from_user.id, **{field_name: f'"{value}"'})
+    db.update_user(message.from_user.id, **{field_name: value})
 
 
 def setter(
@@ -53,6 +53,6 @@ def setter(
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             if extra_info_key is not None:
                 message = bot.send_message(message.chat.id, const(extra_info_key))
-                bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
+            bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
         return inner
     return inner_decorator

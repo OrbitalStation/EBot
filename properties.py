@@ -24,7 +24,7 @@ def load_properties(dirpath: str, sep: str = '=', comment_char: str = '#'):
 
 
 def concat_strings(filepath: str) -> str:
-    with open(filepath, "rt") as file:
+    with open(filepath, "rt", encoding="utf-8") as file:
         return file.read().replace('\\\n', ' ')
 
 

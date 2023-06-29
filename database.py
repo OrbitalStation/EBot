@@ -40,8 +40,8 @@ def create_user_if_not_exists_and_fetch_if_needed(uid: int, do_fetch: bool) -> U
 
 
 def update_user(uid: int, **kwargs):
-    update = ", ".join([(field + ' = ' + value) for field, value in kwargs.items()])
-    _mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = {uid}')
+    update = ", ".join([(field + ' = ' + '"' + value.replace('"', '""') + '"') for field, value in kwargs.items()])
+    _mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = ?', (uid,))
 
 
 def fetch_user(uid: int) -> User | None:

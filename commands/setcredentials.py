@@ -7,7 +7,7 @@ import database as db
 
 def _update(bot, message):
     def update(answer):
-        update_single_field(bot, message, answer.text, "google_disk_credentials", const('botHumanGDCredentials'))
+        update_single_field(bot, answer, answer.text, "google_disk_credentials", const('botHumanGDCredentials'))
     return update
 
 
