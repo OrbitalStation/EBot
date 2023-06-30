@@ -23,6 +23,10 @@ def user_answered(bot, update, message, name):
                 bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
                 return
             answer.text = answer.text.strip()
+            if answer.text.startswith('/'):
+                from commands import execute_command
+                execute_command(bot, answer)
+                return
         elif answer.content_type == "photo":
             bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
             return

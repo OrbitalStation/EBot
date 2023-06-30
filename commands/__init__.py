@@ -1,5 +1,5 @@
 from iterate_through_modules_in_cwd import iterate
-
+from properties import const
 
 _commands = {}
 
@@ -17,3 +17,16 @@ def register_all_commands(bot):
 
     for command in _commands.keys():
         bot.message_handler(commands=[command])(handler(command))
+
+
+def execute_command(bot, message):
+    if not message.text.startswith('/'):
+        return
+    try:
+        _commands[message.text[len('/'):]](bot, message)
+    except KeyError:
+        handle_unknown_command(bot, message)
+
+
+def handle_unknown_command(bot, message):
+    bot.send_message(message.chat.id, const("botUnknownCmdError"))

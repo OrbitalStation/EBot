@@ -9,20 +9,22 @@ from .send_raw import send_raw
 
 def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
     chat, sender = _get_chat_and_sender(message)
+    time = convert(message.forward_date)
     body = f"""
         <html><head></head><body>
         <b>ВАЖНОЕ - Вы отметили данное сообщение</b>
         <p><b>Чат:</b> <i>{chat}</i></p>
         <p><b>Отправитель:</b> <i>{sender}</i></p>
-        <p><b>Время написания:</b> <i>{convert(message.forward_date)}</i></p>
+        <p><b>Время написания:</b> <i>{time}</i></p>
         <b>Оригинальное сообщение:</b>
         <br>
         <i>{caption}</i>
         </body></html>
         """
+    title = f"Сообщение из Телеграмма, {time}"
     try:
         # TODO: `send_raw` returns a dict with possible errors. Deal with it
-        send_raw(const("botEmail"), const("botEmailPassword"), email, body)
+        send_raw(const("botEmail"), const("botEmailPassword"), email, body, title)
         return True
     except smtplib.SMTPRecipientsRefused as err:
         code, msg = err.recipients[email]
@@ -30,7 +32,7 @@ def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
             key = const("botLetterSendInvalidEmailErrorMsg") % email
         else:
             key = msg.decode("utf-8")
-        bot.send_message(message.chat.id, const("botLetterSendPreamble") + ' ' + key)
+        bot.send_message(message.chat.id, const("botLetterSendErrorPreamble") + ' ' + key)
         return False
 
 
