@@ -14,9 +14,8 @@ class User:
     # Primary key
     uid: int
     email: str
-    google_disk_client_secrets: str
     google_disk_credentials: str
-    bot_folder_id: str
+    google_disk_folder_id: str
 
 
 ufields = User.__dict__['__annotations__']
