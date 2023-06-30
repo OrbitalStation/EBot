@@ -4,6 +4,7 @@ from telebot.types import Message
 from telebot import TeleBot
 from convert_time_from_unix import convert
 from properties import const
+from e_mail import create_title_for_email_and_attachment
 from .send_raw import send_raw
 
 
@@ -21,10 +22,9 @@ def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
         <i>{caption}</i>
         </body></html>
         """
-    title = f"Сообщение из Телеграмма, {time}"
     try:
         # TODO: `send_raw` returns a dict with possible errors. Deal with it
-        send_raw(const("botEmail"), const("botEmailPassword"), email, body, title)
+        send_raw(const("botEmail"), const("botEmailPassword"), email, body, create_title_for_email_and_attachment(time))
         return True
     except smtplib.SMTPRecipientsRefused as err:
         code, msg = err.recipients[email]

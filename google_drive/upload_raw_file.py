@@ -6,7 +6,7 @@ from googleapiclient.errors import HttpError
 from properties import const
 
 
-def upload_raw_file(bot, message, filepath, filename='Important', description='Uploaded by EmailBot'):
+def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot'):
     db.create_table_if_not_exists()
     bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)\
         .google_disk_folder_id
@@ -21,7 +21,7 @@ def upload_raw_file(bot, message, filepath, filename='Important', description='U
         resumable=True
     )
     body = {
-        'name': filename,
+        'name': title,
         'description': description,
         'parents': [bot_folder_id]
     }
@@ -34,11 +34,11 @@ def upload_raw_file(bot, message, filepath, filename='Important', description='U
         ).execute()
         file_title = new_file.get('name')
         service.close()
-        if file_title == filename:
+        if file_title == title:
             bot.send_message(message.chat.id, const("GDFileUploadSuccess"))
             return new_file.get('id')
         else:
-            bot.send_message(message.chat.id, const("GDFileUploadMaybeError") + f" {file_title} ~:~ {filename}")
+            bot.send_message(message.chat.id, const("GDFileUploadMaybeError") + f" {file_title} ~:~ {title}")
     except HttpError as err:
         # TODO(developer) - Handle errors from drive API.
         bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
