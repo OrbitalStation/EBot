@@ -11,8 +11,6 @@ def _verification_code(bot, flow):
         db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=False)
         credentials = flow.step2_exchange(message.text).to_json()
         update_single_field(bot, message, credentials, "google_disk_credentials", const('botHumanGDCredentials'))
-        bot.send_message(message.chat.id, const("botUserSetterSuccessCmd") % const("botHumanGDCredentials") +
-                         ' ' + credentials)
     return update
 
 
