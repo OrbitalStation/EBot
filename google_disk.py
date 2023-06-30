@@ -4,6 +4,7 @@ import os
 import tempfile
 import googleapiclient.http
 import httplib2
+
 import database as db
 from json import JSONDecodeError
 from googleapiclient.discovery import build
@@ -11,6 +12,7 @@ from googleapiclient.errors import HttpError
 from oauth2client import clientsecrets
 from oauth2client.client import OAuth2WebServerFlow, Credentials
 from properties import const
+from telebot.types import Message
 
 
 def get_drive_service(bot, message):
@@ -68,19 +70,19 @@ def get_flow(bot, message, client_secrets, scope) -> OAuth2WebServerFlow | None:
     return None
 
 
-def upload_from_message(bot, message, **kwargs):
+def upload_from_message(bot, message: Message, **kwargs):
     """ Uploads content from message to Google Drive.
     bot: the bot
     message: message with photo or document
     **kwargs: custom filename or description for file
     Returns: id of the uploaded file
     """
-    if message.content_type == "photo":
-        file = message.photo[-1]
-    elif message.content_type == "document":
-        file = message.document
+    if message.content_type in ['document', 'audio', 'voice', 'video', 'photo']:
+        file = message.__getattribute__(message.content_type)
     else:
         return
+    if message.content_type == "photo":
+        file = file[-1]
 
     file_info = bot.get_file(file.file_id)
     downloaded_file = bot.download_file(file_info.file_path)
@@ -99,6 +101,7 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
         .google_disk_folder_id
 
     if (service := get_drive_service(bot, message)) is None:
+        # TODO send_message
         return
 
     media_body = googleapiclient.http.MediaFileUpload(
