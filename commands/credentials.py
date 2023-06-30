@@ -1,4 +1,4 @@
 from commands.__helper import getter
 
 
-call = getter('google_disk_credentials', "botHumanGDCredentials")
+command = getter('google_disk_credentials', "botHumanGDCredentials")

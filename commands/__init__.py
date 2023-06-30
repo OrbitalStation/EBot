@@ -6,7 +6,7 @@ _commands = {}
 
 @iterate(__file__)
 def _cb(path, mod):
-    _commands[path] = mod.call
+    _commands[path] = mod.command
 
 
 def register_all_commands(bot):

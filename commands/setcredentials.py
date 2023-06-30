@@ -23,20 +23,21 @@ def _cs(bot):
             file_info = bot.get_file(doc.file_id)
             file_bytes = bot.download_file(file_info.file_path)
             flow = get_flow(bot, message, file_bytes.decode("utf-8"), const("googleOauth2Scope"))
-
+        else:
+            flow = None
         if flow is None:
             return
         flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
         authorize_url = flow.step1_get_authorize_url()
         bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo3") + ' ' + authorize_url)
         message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo4"))
-        bot.register_next_step_handler(message, user_answered(bot, _verification_code(bot, flow), message, None,
+        bot.register_next_step_handler(message, user_answered(bot, _verification_code(bot, flow), message,
                                                               const("botHumanGDCredentials")))
     return update
 
 
-def call(bot, message):
+def command(bot, message):
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo0"))
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1"))
-    bot.register_next_step_handler(message, user_answered(bot, _cs(bot), message, None,
+    bot.register_next_step_handler(message, user_answered(bot, _cs(bot), message,
                                                           const("botHumanGDClientSecrets")))
