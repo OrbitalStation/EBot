@@ -1,5 +1,4 @@
-import telebot
-
+import commands
 from properties import const
 import database as db
 
@@ -43,11 +42,13 @@ def update_single_field(bot, message, value, field_name, field_human_name):
     db.update_user(message.from_user.id, **{field_name: value})
 
 
-def setter(field: str, name_key: str):
+def setter(field: str, name_key: str, update_decorator=None):
     def inner_decorator(validate):
         def inner(bot, message):
+            @update_decorator
             def update(answer):
-                update_single_field(bot, answer, answer.text, field, name)
+                if answer.content_type == "text":
+                    update_single_field(bot, answer, answer.text, field, name)
 
             name = const(name_key)
             db.create_table_if_not_exists()
@@ -55,5 +56,13 @@ def setter(field: str, name_key: str):
 
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
+
         return inner
+
     return inner_decorator
+
+
+def send_markdown(bot, message, path):
+    with open(path, "rb") as file:
+        msg = file.read().decode("utf-8")
+    return bot.send_message(message.chat.id, msg, parse_mode="Markdown")

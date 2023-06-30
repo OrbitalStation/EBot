@@ -11,14 +11,19 @@ def _verification_code(bot, flow):
         db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=False)
         credentials = flow.step2_exchange(message.text).to_json()
         update_single_field(bot, message, credentials, "google_disk_credentials", const('botHumanGDCredentials'))
-        bot.send_message(message.chat.id, const("botUserSetterSuccessCmd") % const("botHumanGDCredentials") +
-                         ' ' + credentials)
     return update
 
 
 def _cs(bot):
     def update(message):
-        flow = get_flow(bot, message, message.text, const("googleOauth2Scope"))
+        if message.content_type == "text":
+            flow = get_flow(bot, message, message.text, const("googleOauth2Scope"))
+        elif message.content_type == "document":
+            doc = message.document
+            file_info = bot.get_file(doc.file_id)
+            file_bytes = bot.download_file(file_info.file_path)
+            flow = get_flow(bot, message, file_bytes.decode("utf-8"), const("googleOauth2Scope"))
+
         if flow is None:
             return
         flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
@@ -30,12 +35,8 @@ def _cs(bot):
     return update
 
 
-def command(bot, message):
+def call(bot, message):
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo0"))
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1"))
-    bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo2"))
-    document = const("googleCloudAccountGuidePath")
-    with open(document, "rb") as file:
-        message = bot.send_document(message.chat.id, file, document)
     bot.register_next_step_handler(message, user_answered(bot, _cs(bot), message, None,
                                                           const("botHumanGDClientSecrets")))
