@@ -42,9 +42,10 @@ def update_single_field(bot, message, value, field_name, field_human_name):
     db.update_user(message.from_user.id, **{field_name: value})
 
 
-def setter(field: str, name_key: str):
+def setter(field: str, name_key: str, update_decorator=None):
     def inner_decorator(validate):
         def inner(bot, message):
+            @update_decorator
             def update(answer):
                 if answer.content_type == "text":
                     update_single_field(bot, answer, answer.text, field, name)
@@ -55,7 +56,9 @@ def setter(field: str, name_key: str):
 
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
+
         return inner
+
     return inner_decorator
 
 
