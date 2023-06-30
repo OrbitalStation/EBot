@@ -152,8 +152,8 @@ def check_folder_exists(bot, message, service, folder_id):
     try:
         response = service\
             .files()\
-            .list(q=f"mimeType='application/vnd.google-apps.folder' and id='{folder_id}'", spaces='drive',).execute()
-        return len(response.get('files', [])) > 0
+            .get(fileId=folder_id).execute()
+        return len(response.get('id', [])) > 0
     except HttpError as err:
         bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
         return None
