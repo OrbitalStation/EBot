@@ -103,10 +103,10 @@ def upload_file(bot, message, filepath, filename='Generic', description='Uploade
     if not check_bot_folder_exists(bot, message, service):
         print("Folder not found, making new folder...")
         folder_id = make_bot_folder(bot, message, service)
-        db.update_user(message.chat.id, bot_folder_id=folder_id)
+        db.update_user(message.from_user.id, bot_folder_id=folder_id)
     else:
         # Warning! Fetched id might be invalid (there are no checks)
-        folder_id = db.fetch_user(message.chat.id).bot_folder_id
+        folder_id = db.fetch_user(message.from_user.id).bot_folder_id
 
     # Insert a file. Files are comprised of contents and metadata.
     # MediaFileUpload abstracts uploading file contents from a file on disk.

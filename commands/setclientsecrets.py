@@ -5,6 +5,6 @@ from commands.__helper import setter
     "google_disk_client_secrets",
     "botHumanGDClientSecrets",
     extra_info_key="botSetGDClientSecretsExtraInfo",
-    info_attachment_path="googleCloudAccountGuidePath")
+    md_attachment_path="googleCloudAccountGuidePath")
 def command(_new):
     return True
