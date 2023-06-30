@@ -1,0 +1,12 @@
+from listeners.__helper import listener
+from properties import const
+from google_disk import upload_from_message
+
+
+@listener
+def listener(bot, message):
+    if file_id := upload_from_message(bot, message, filename=message.document.file_name):
+        # TODO sending to email ???
+        bot.send_message(message.from_user.id, const("botDocSendToGDLis") % const('googleDiskFilePrefix') + file_id)
+    else:
+        pass
