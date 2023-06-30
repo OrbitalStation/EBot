@@ -4,6 +4,7 @@ import os
 import tempfile
 import googleapiclient.http
 import httplib2
+
 import database as db
 from json import JSONDecodeError
 from googleapiclient.discovery import build
@@ -11,12 +12,17 @@ from googleapiclient.errors import HttpError
 from oauth2client import clientsecrets
 from oauth2client.client import OAuth2WebServerFlow, Credentials
 from properties import const
+from telebot.types import Message
 
 
 def get_drive_service(bot, message):
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
-    credentials = Credentials.new_from_json(user.google_disk_credentials)
+    try:
+        credentials = Credentials.new_from_json(user.google_disk_credentials)
+    except JSONDecodeError as err:
+        bot.send_message(message.chat.id, const("botUserInvalidCredentialsError") % str(err))
+        return
     http = httplib2.Http()
     credentials.authorize(http)
     return build('drive', 'v3', http=http)
@@ -64,19 +70,19 @@ def get_flow(bot, message, client_secrets, scope) -> OAuth2WebServerFlow | None:
     return None
 
 
-def upload_from_message(bot, message, **kwargs):
+def upload_from_message(bot, message: Message, **kwargs):
     """ Uploads content from message to Google Drive.
     bot: the bot
     message: message with photo or document
     **kwargs: custom filename or description for file
     Returns: id of the uploaded file
     """
-    if message.content_type == "photo":
-        file = message.photo[-1]
-    elif message.content_type == "document":
-        file = message.document
+    if message.content_type in ['document', 'audio', 'voice', 'video', 'photo']:
+        file = message.__getattribute__(message.content_type)
     else:
         return
+    if message.content_type == "photo":
+        file = file[-1]
 
     file_info = bot.get_file(file.file_id)
     downloaded_file = bot.download_file(file_info.file_path)
@@ -94,10 +100,8 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
     bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)\
         .google_disk_folder_id
 
-    service = get_drive_service(bot, message)
-
-    if not check_folder_exists(bot, message, service, bot_folder_id):
-        bot.send_message(message.chat.id, const("GDFileUploadFolderNotExist"))
+    if (service := get_drive_service(bot, message)) is None:
+        # TODO send_message
         return
 
     media_body = googleapiclient.http.MediaFileUpload(
@@ -127,33 +131,3 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
     except HttpError as err:
         # TODO(developer) - Handle errors from drive API.
         bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
-
-
-# def create_folder(bot, message, name, service):
-#     try:
-#         file_metadata = {
-#             'name': name,
-#             'mimeType': 'application/vnd.google-apps.folder'
-#         }
-#
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreateBegin") % name)
-#
-#         # pylint: disable=maybe-no-member
-#         folder = service.files().create(body=file_metadata, fields='id').execute()
-#         fid = folder.get("id")
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreated") % (name, fid))
-#         return fid
-#     except HttpError as err:
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreateError") % name + ' ' + str(err))
-#         return
-
-
-def check_folder_exists(bot, message, service, folder_id):
-    try:
-        response = service\
-            .files()\
-            .get(fileId=folder_id).execute()
-        return len(response.get('id', [])) > 0
-    except HttpError as err:
-        bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
-        return None
