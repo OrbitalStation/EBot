@@ -23,9 +23,6 @@ def user_answered(bot, update, message, validate, name):
             if answer.text is None or answer.text == "":
                 bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
                 return
-            if answer.text.startswith('/'):
-                commands.gdguide.call(bot, message)
-                return
             answer.text = answer.text.strip()
             if validate is not None:
                 if not validate(answer.text):
@@ -51,13 +48,6 @@ def setter(field: str, name_key: str):
             def update(answer):
                 if answer.content_type == "text":
                     update_single_field(bot, answer, answer.text, field, name)
-                elif answer.content_type == "document":
-                    doc = answer.document
-                    file_info = bot.get_file(doc.file_id)
-                    file_bytes = bot.download_file(file_info.file_path)
-                    update_single_field(bot, answer, file_bytes.decode("utf-8"), field, name)
-                else:
-                    pass
 
             name = const(name_key)
             db.create_table_if_not_exists()
