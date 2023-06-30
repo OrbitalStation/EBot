@@ -13,10 +13,14 @@ from oauth2client.client import OAuth2WebServerFlow, Credentials
 from properties import const
 
 
-def get_drive_service(_bot, message):
+def get_drive_service(bot, message):
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
-    credentials = Credentials.new_from_json(user.google_disk_credentials)
+    try:
+        credentials = Credentials.new_from_json(user.google_disk_credentials)
+    except JSONDecodeError as err:
+        bot.send_message(message.chat.id, const("botUserInvalidCredentialsError") % str(err))
+        return
     http = httplib2.Http()
     credentials.authorize(http)
     return build('drive', 'v3', http=http)
@@ -94,10 +98,7 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
     bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)\
         .google_disk_folder_id
 
-    service = get_drive_service(bot, message)
-
-    if not check_folder_exists(bot, message, service, bot_folder_id):
-        bot.send_message(message.chat.id, const("GDFileUploadFolderNotExist"))
+    if (service := get_drive_service(bot, message)) is None:
         return
 
     media_body = googleapiclient.http.MediaFileUpload(
@@ -127,33 +128,3 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
     except HttpError as err:
         # TODO(developer) - Handle errors from drive API.
         bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
-
-
-# def create_folder(bot, message, name, service):
-#     try:
-#         file_metadata = {
-#             'name': name,
-#             'mimeType': 'application/vnd.google-apps.folder'
-#         }
-#
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreateBegin") % name)
-#
-#         # pylint: disable=maybe-no-member
-#         folder = service.files().create(body=file_metadata, fields='id').execute()
-#         fid = folder.get("id")
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreated") % (name, fid))
-#         return fid
-#     except HttpError as err:
-#         bot.send_message(message.chat.id, const("GDFileUploadFolderCreateError") % name + ' ' + str(err))
-#         return
-
-
-def check_folder_exists(bot, message, service, folder_id):
-    try:
-        response = service\
-            .files()\
-            .list(q=f"mimeType='application/vnd.google-apps.folder' and id='{folder_id}'", spaces='drive',).execute()
-        return len(response.get('files', [])) > 0
-    except HttpError as err:
-        bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
-        return None
