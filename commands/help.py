@@ -8,4 +8,4 @@ def call(bot, message):
     bot.send_message(message.chat.id, const("botHelpForwardCmd"))
     bot.send_message(message.chat.id, const("botHelpWhatIfErrorCmd"))
     bot.send_message(message.chat.id, const("botHelpGoogleDiskCmd"))
-    bot.send_message(message.chat.id, const("botHelpAddToContacts"))
+    bot.send_message(message.chat.id, const("botHelpAddToContacts") % const("botEmail"))
