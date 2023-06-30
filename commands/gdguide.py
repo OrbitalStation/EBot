@@ -3,6 +3,6 @@ from properties import const
 
 
 # TODO getting GD botfolder link
-def command(bot, message):
+def call(bot, message):
     attachment = const("googleCloudAccountGuidePath")
     send_markdown(bot, message, attachment)

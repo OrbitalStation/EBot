@@ -12,7 +12,7 @@ def _update(bot, flow):
     return update
 
 
-def command(bot, message):
+def call(bot, message):
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
     flow = get_flow(bot, message, user.google_disk_client_secrets, const("googleOauth2Scope"))

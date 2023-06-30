@@ -24,7 +24,7 @@ def user_answered(bot, update, message, validate, name):
                 bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
                 return
             if answer.text.startswith('/'):
-                commands.gdguide.command(bot, message)
+                commands.gdguide.call(bot, message)
                 return
             answer.text = answer.text.strip()
             if validate is not None:
