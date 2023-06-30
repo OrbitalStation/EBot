@@ -37,7 +37,7 @@ def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
 def _get_chat_and_sender(message: Message) -> tuple[str, str]:
     if message.forward_from:
         # Chat
-        return message.chat.first_name, message.forward_from.first_name + f' (@{message.forward_from.username})'
+        return message.chat.title, message.forward_from.first_name + f' (@{message.forward_from.username})'
     elif message.forward_from_chat:
         # Channel
         return message.forward_from_chat.title, message.forward_signature or "Аноним 🦹"
