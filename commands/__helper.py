@@ -1,5 +1,4 @@
-import telebot
-
+import commands
 from properties import const
 import database as db
 
@@ -23,6 +22,9 @@ def user_answered(bot, update, message, validate, name):
         if answer.content_type == "text":
             if answer.text is None or answer.text == "":
                 bot.send_message(message.chat.id, const("botUserSetterNoArgErrorCmd") % name)
+                return
+            if answer.text.startswith('/'):
+                commands.gdguide.command(bot, message)
                 return
             answer.text = answer.text.strip()
             if validate is not None:
