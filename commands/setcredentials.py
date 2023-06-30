@@ -31,8 +31,8 @@ def _cs(bot):
             return
         flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
         authorize_url = flow.step1_get_authorize_url()
-        bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo2") + ' ' + authorize_url)
-        message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo3"))
+        bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo3") + ' ' + authorize_url)
+        message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo4"))
         bot.register_next_step_handler(message, user_answered(bot, _verification_code(bot, flow), message, None,
                                                               const("botHumanGDCredentials")))
     return update
