@@ -1,7 +1,7 @@
 import oauth2client.client
 from commands.__helper import user_answered, update_single_field
 from properties import const
-from google_disk import get_flow
+from google_drive.flow import get_flow
 import database as db
 
 

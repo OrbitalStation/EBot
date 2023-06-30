@@ -3,9 +3,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def send_raw(sender: str, sender_password: str, receiver: str, body: str):
+def send_raw(sender: str, sender_password: str, receiver: str, body: str, title: str):
     message = MIMEMultipart('alternative')
-    message['Subject'] = "Link"
+    message['Subject'] = title
     message['From'] = sender
     message['To'] = receiver
 

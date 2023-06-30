@@ -1,6 +1,7 @@
 import database as db
+from commands import handle_unknown_command
 from e_mail.send import send
-from google_disk import upload_from_message
+from google_drive.upload_from_message import upload_from_message
 from properties import const
 
 
@@ -9,6 +10,11 @@ def listener(cb):
         if message.forward_from or message.forward_from_chat or message.forward_sender_name:
             cb(bot, message)
         else:
+            if message.content_type == "text":
+                message.text = message.text.strip()
+                if message.text.startswith("/"):
+                    handle_unknown_command(bot, message)
+                    return
             bot.send_message(message.from_user.id, const("botNotForwardedMessageLis"))
     return inner
 
