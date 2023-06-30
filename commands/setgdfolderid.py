@@ -21,4 +21,4 @@ def check_is_folder_id(string):
 
 
 def get_folder_id_from_link(link: str):
-    return link[link.rfind('/') + 1:]
+    return link[link.rfind('/') + 1 : link.find('?')]
