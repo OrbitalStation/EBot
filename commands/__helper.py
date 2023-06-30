@@ -47,8 +47,7 @@ def setter(
         field: str,
         name_key: str,
         *,
-        extra_info_key: str | None = None,
-        md_attachment_path: str | None = None
+        extra_info_key: str | None = None
 ):
     def inner_decorator(validate):
         def inner(bot, message):
@@ -70,13 +69,14 @@ def setter(
             message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
             if extra_info_key is not None:
                 message = bot.send_message(message.chat.id, const(extra_info_key))
-            if md_attachment_path is not None:
-                attachment = const(md_attachment_path)
-                with open(attachment, "rb") as file:
-                    msg = file.read().decode("utf-8")
-                    message = bot.send_message(message.chat.id, msg, parse_mode="Markdown")
             bot.register_next_step_handler(message, user_answered(bot, update, message, validate, name))
 
         return inner
 
     return inner_decorator
+
+
+def send_markdown(bot, message, path):
+    with open(path, "rb") as file:
+        msg = file.read().decode("utf-8")
+    return bot.send_message(message.chat.id, msg, parse_mode="Markdown")

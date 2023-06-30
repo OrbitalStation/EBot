@@ -9,4 +9,4 @@ def command(bot, message):
                      f"""Uploaded successful:\n
                      {const('googleDiskFilePrefix')}
                      {fileid}""")
-    return fileid is not None   # validate?
+    return fileid is not None
