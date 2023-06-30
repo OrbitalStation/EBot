@@ -13,7 +13,7 @@ from oauth2client.client import OAuth2WebServerFlow, Credentials
 from properties import const
 
 
-def get_drive_service(_bot, message):
+def get_drive_service(bot, message):
     db.create_table_if_not_exists()
     user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
     credentials = Credentials.new_from_json(user.google_disk_credentials)
@@ -91,7 +91,7 @@ def upload_from_message(bot, message, **kwargs):
 
 def upload_file(bot, message, filepath, filename='Important', description='Uploaded by EmailBot'):
     db.create_table_if_not_exists()
-    bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True) \
+    bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)\
         .google_disk_folder_id
 
     service = get_drive_service(bot, message)
@@ -150,10 +150,10 @@ def upload_file(bot, message, filepath, filename='Important', description='Uploa
 
 def check_folder_exists(bot, message, service, folder_id):
     try:
-        response = service \
-            .files() \
-            .get(fileId=folder_id).execute()
-        return len(response.get('id', [])) > 0
+        response = service\
+            .files()\
+            .list(q=f"mimeType='application/vnd.google-apps.folder' and id='{folder_id}'", spaces='drive',).execute()
+        return len(response.get('files', [])) > 0
     except HttpError as err:
         bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
         return None
