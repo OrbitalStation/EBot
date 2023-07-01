@@ -18,7 +18,8 @@ def send_raw(sender: str, sender_password: str, receiver: str, body: str, title:
     if bool(const("SMTPDoStartTLS")):
         mail.starttls()
         mail.ehlo()
-    mail.login(sender, sender_password)
+    if bool(const("botDoLoginEmail")):
+        mail.login(sender, sender_password)
 
     errors = mail.sendmail(sender, receiver, message.as_string())
     mail.quit()
