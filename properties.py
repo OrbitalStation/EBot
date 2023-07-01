@@ -20,6 +20,15 @@ def load_properties(dirpath: str, sep: str = '=', comment_char: str = '#'):
                 key_value = line.split(sep)
                 key = key_value[0].strip()
                 value = sep.join(key_value[1:]).strip().strip('"').strip("'")
+                if value == "true":
+                    value = True
+                elif value == "false":
+                    value = False
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
                 _props[key] = value
 
 
@@ -28,5 +37,5 @@ def concat_strings(filepath: str) -> str:
         return file.read().replace('\\\n', ' ')
 
 
-def const(name: str) -> str:
+def const(name: str) -> str | int | bool:
     return _props[name]

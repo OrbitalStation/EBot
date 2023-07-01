@@ -13,12 +13,12 @@ def send_raw(sender: str, sender_password: str, receiver: str, body: str, title:
     message.attach(MIMEText("Важное", 'plain'))
     message.attach(MIMEText(body, 'html'))
 
-    mail = smtplib.SMTP(const("SMTPHost"), int(const("SMTPPort")))
+    mail = smtplib.SMTP(const("SMTPHost"), const("SMTPPort"))
     mail.ehlo()
-    if bool(const("SMTPDoStartTLS")):
+    if const("SMTPDoStartTLS"):
         mail.starttls()
         mail.ehlo()
-    if bool(const("botDoLoginEmail")):
+    if const("botDoLoginEmail"):
         mail.login(sender, sender_password)
 
     errors = mail.sendmail(sender, receiver, message.as_string())
