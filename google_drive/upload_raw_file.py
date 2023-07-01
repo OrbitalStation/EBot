@@ -27,6 +27,7 @@ def upload_raw_file(bot, message, filepath, title, description='Uploaded by Emai
     }
 
     try:
+        bot.send_message(message.chat.id, const("GDFileUploadStart"))
         new_file = service.files().create(
             uploadType="resumable",
             body=body,
