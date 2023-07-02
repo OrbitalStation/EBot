@@ -3,11 +3,6 @@ from sqlite3 import Cursor
 from dataclasses import dataclass
 import sqlite3
 
-pyTy2sqlTy = {
-    'int': 'INT',
-    'str': 'TEXT'
-}
-
 
 @dataclass(frozen=True)
 class User:
@@ -18,47 +13,81 @@ class User:
     google_disk_folder_id: str
 
 
-ufields = User.__dict__['__annotations__']
+class Database:
+    ufields = User.__dict__['__annotations__']
+
+    @staticmethod
+    def create_table_if_not_exists():
+        pass
+
+    @staticmethod
+    def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
+        pass
+
+    @staticmethod
+    def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
+        pass
+
+    @staticmethod
+    def fetch_user(uid: int) -> User | None:
+        pass
+
+    @staticmethod
+    def _mutate(request: str, *args, **kwargs):
+        pass
+
+    @staticmethod
+    def _fetch(request: str, *args, **kwargs) -> Cursor:
+        pass
 
 
-def create_table_if_not_exists():
-    fields = ', '.join([f'{field} {pyTy2sqlTy[value.__name__]}{" PRIMARY KEY" if field == "uid" else ""}'
-                        for field, value in ufields.items()])
-    _mutate(f"CREATE TABLE IF NOT EXISTS {const('dbTableName')}({fields});")
+class SQLiteDB(Database):
 
+    pyTy2sqlTy = {
+        'int': 'INT',
+        'str': 'TEXT'
+    }
+    @staticmethod
+    def create_table_if_not_exists():
+        fields = ', '.join([f'{field} {SQLiteDB.pyTy2sqlTy[value.__name__]}{" PRIMARY KEY" if field == "uid" else ""}'
+                            for field, value in SQLiteDB.ufields.items()])
+        SQLiteDB._mutate(f"CREATE TABLE IF NOT EXISTS {const('dbTableName')}({fields});")
 
-def create_user_if_not_exists_and_fetch_if_needed(uid: int, do_fetch: bool) -> User:
-    if (fetched := fetch_user(uid)) is None:
-        fields, values = zip(*[(field, ty()) for field, ty in ufields.items() if field != 'uid'])
-        placeholders = ('?,' * len(ufields))[:-1]
-        _mutate(f"INSERT INTO {const('dbTableName')} (uid, {', '.join(fields)}) VALUES({placeholders});",
-                (uid, *values))
+    @staticmethod
+    def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
+        if (fetched := SQLiteDB.fetch_user(uid)) is None:
+            fields, values = zip(*[(field, ty()) for field, ty in SQLiteDB.ufields.items() if field != 'uid'])
+            placeholders = ('?,' * len(SQLiteDB.ufields))[:-1]
+            SQLiteDB._mutate(f"INSERT INTO {const('dbTableName')} (uid, {', '.join(fields)}) VALUES({placeholders});",
+                             (uid, *values))
+            if do_fetch:
+                return SQLiteDB.fetch_user(uid)
         if do_fetch:
-            return fetch_user(uid)
-    if do_fetch:
-        return fetched
+            return fetched
 
+    @staticmethod
+    def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
+        update = ", ".join([(field + ' = ' + '"' + value.replace('"', '""') + '"') for field, value in kwargs.items()])
+        SQLiteDB._mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = ?', (uid,))
+        if do_fetch:
+            return SQLiteDB.fetch_user(uid)
 
-def update_user(uid: int, **kwargs):
-    update = ", ".join([(field + ' = ' + '"' + value.replace('"', '""') + '"') for field, value in kwargs.items()])
-    _mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = ?', (uid,))
+    @staticmethod
+    def fetch_user(uid: int) -> User | None:
+        if (fetched := SQLiteDB._fetch(f"SELECT * FROM {const('dbTableName')} WHERE uid=?", (uid,)).fetchone()) is None:
+            return
+        return User(*fetched)
 
+    @staticmethod
+    def _mutate(request: str, *args, **kwargs):
+        con = sqlite3.connect(const("dbPath"))
+        cur = con.cursor()
+        cur.execute(request, *args, **kwargs)
+        con.commit()
+        cur.close()
 
-def fetch_user(uid: int) -> User | None:
-    if (fetched := _fetch(f"SELECT * FROM {const('dbTableName')} WHERE uid=?", (uid,)).fetchone()) is None:
-        return
-    return User(*fetched)
-
-
-def _mutate(request: str, *args, **kwargs):
-    con = sqlite3.connect(const("dbPath"))
-    cur = con.cursor()
-    cur.execute(request, *args, **kwargs)
-    con.commit()
-    cur.close()
-
-
-def _fetch(request: str, *args, **kwargs) -> Cursor:
-    con = sqlite3.connect(const("dbPath"))
-    cur = con.cursor()
-    return cur.execute(request, *args, **kwargs)
+    @staticmethod
+    def _fetch(request: str, *args, **kwargs) -> Cursor:
+        con = sqlite3.connect(const("dbPath"))
+        cur = con.cursor()
+        return cur.execute(request, *args, **kwargs)

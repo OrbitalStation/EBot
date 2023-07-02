@@ -3,5 +3,5 @@
 venv
 __pycache__
 
-users.db
+users.DB
 sensitive.properties

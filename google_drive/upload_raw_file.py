@@ -1,14 +1,14 @@
 import mimetypes
 import googleapiclient
-import database as db
+from database import SQLiteDB as DB
 from google_drive.service import get_drive_service
 from googleapiclient.errors import HttpError
 from properties import const
 
 
 def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot'):
-    db.create_table_if_not_exists()
-    bot_folder_id = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)\
+    DB.create_table_if_not_exists()
+    bot_folder_id = DB.create_user_if_not_exists(message.from_user.id)\
         .google_disk_folder_id
 
     if (service := get_drive_service(bot, message)) is None:
