@@ -18,27 +18,27 @@ class Database:
 
     @staticmethod
     def create_table_if_not_exists():
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def fetch_user(uid: int) -> User | None:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def _mutate(request: str, *args, **kwargs):
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def _fetch(request: str, *args, **kwargs) -> Cursor:
-        pass
+        raise NotImplementedError
 
 
 class SQLiteDB(Database):
