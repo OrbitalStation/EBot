@@ -1,4 +1,5 @@
 import os
+from os.path import exists, isdir
 import tempfile
 from telebot.types import Message
 from telebot import TeleBot
@@ -21,6 +22,12 @@ def upload_from_message(bot: TeleBot, message: Message):
         return
     if message.content_type == "photo":
         file = file[-1]
+
+    if not exists(const("tempFilesPath")):
+        os.mkdir(const("tempFilesPath"))
+    elif not isdir(const("tempFilesPath")):
+        os.unlink(const("tempFilesPath"))
+        os.mkdir(const("tempFilesPath"))
 
     file_info = bot.get_file(file.file_id)
     downloaded_file = bot.download_file(file_info.file_path)

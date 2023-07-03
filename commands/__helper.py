@@ -1,12 +1,12 @@
 from properties import const
-import database as db
+from database import SQLiteDB as DB
 
 
 def getter(field: str, name_key: str):
     def inner(bot, message):
         name = const(name_key)
-        db.create_table_if_not_exists()
-        user = db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=True)
+        DB.create_table_if_not_exists()
+        user = DB.create_user_if_not_exists(message.from_user.id)
         value = getattr(user, field)
         if value == "":
             bot.send_message(message.chat.id, const('botUserGetterHasNoPropertyCmd') % name)
@@ -38,8 +38,11 @@ def user_answered(bot, update, message, name):
 
 
 def update_single_field(bot, message, value, field_name, field_human_name):
+    if (updated := DB.update_user(message.from_user.id, **{field_name: value})) is None:
+        #TODO send_message
+        bot.send_message(message.chat.id, "//MAKE ERROR TEXT PLEASE//")
+        return
     bot.send_message(message.chat.id, const("botUserSetterSuccessCmd") % field_human_name + ' ' + value)
-    db.update_user(message.from_user.id, **{field_name: value})
 
 
 def setter(field: str, name_key: str, *, extra_info: str | None = None, update_decorator=None):
@@ -52,8 +55,8 @@ def setter(field: str, name_key: str, *, extra_info: str | None = None, update_d
             update = update_decorator(update)
 
         name = const(name_key)
-        db.create_table_if_not_exists()
-        db.create_user_if_not_exists_and_fetch_if_needed(message.from_user.id, do_fetch=False)
+        DB.create_table_if_not_exists()
+        DB.create_user_if_not_exists(message.from_user.id, do_fetch=False)
 
         message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
 
