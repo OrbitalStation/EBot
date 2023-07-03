@@ -1,6 +1,9 @@
 # Contains sensitive data
 
-telebotToken=
+telebotToken=<your Telegram bot token(obtained from BotFather)>
 
-botEmail=
-botEmailPassword=
+botDoLoginEmail=true
+botEmail=<emailBotWillSendMessagesFrom@you.com>
+
+# Only used if `botDoLoginEmail` is true
+botEmailPassword=<passwordUsedToLoginToTheEmailAbove>

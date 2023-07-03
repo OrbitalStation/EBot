@@ -3,7 +3,7 @@
     ➝ click **Create**.
 3. Enter any **Project name** (EmailBotInstance for example)
     ➝ click **Create**.
-4. Click **OAuth consent screen** in the left side menu
+4. Click **OAuth consent screen** on the left side menu
     ➝ choose **External**
     ➝ click **Create**.
 5. Enter any **Application name, Support email, Developer contact information**
