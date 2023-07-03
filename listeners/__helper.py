@@ -1,4 +1,4 @@
-from database import SQLiteDB as DB
+from database import db
 from commands import handle_unknown_command
 from e_mail.send import send
 from google_drive.upload_from_message import upload_from_message
@@ -26,6 +26,6 @@ def attachment_listener(name: str):
             return
         caption = message.caption if message.caption else ""
         text = caption + '<br>' + const(name) + ' ' + const("googleDiskFilePrefix") + file_id
-        if send(bot, message, DB.fetch_user(message.from_user.id).email, text):
+        if send(bot, message, db.fetch_user(message.from_user.id).email, text):
             bot.send_message(message.from_user.id, const("botMessageSentToEmailLis"))
     return inner

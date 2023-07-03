@@ -1,52 +1,15 @@
 from properties import const
 from sqlite3 import Cursor
-from dataclasses import dataclass
+from database.interface import Database, User
 import sqlite3
 
 
-@dataclass(frozen=True)
-class User:
-    # Primary key
-    uid: int
-    email: str
-    google_disk_credentials: str
-    google_disk_folder_id: str
-
-
-class Database:
-    ufields = User.__dict__['__annotations__']
-
-    @staticmethod
-    def create_table_if_not_exists():
-        raise NotImplementedError
-
-    @staticmethod
-    def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def fetch_user(uid: int) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def _mutate(request: str, *args, **kwargs):
-        raise NotImplementedError
-
-    @staticmethod
-    def _fetch(request: str, *args, **kwargs) -> Cursor:
-        raise NotImplementedError
-
-
 class SQLiteDB(Database):
-
     pyTy2sqlTy = {
         'int': 'INT',
         'str': 'TEXT'
     }
+
     @staticmethod
     def create_table_if_not_exists():
         fields = ', '.join([f'{field} {SQLiteDB.pyTy2sqlTy[value.__name__]}{" PRIMARY KEY" if field == "uid" else ""}'

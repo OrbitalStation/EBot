@@ -1,5 +1,5 @@
 import httplib2
-from database import SQLiteDB as DB
+from database import db
 from oauth2client.client import Credentials
 from googleapiclient.discovery import build
 from json import JSONDecodeError
@@ -7,8 +7,8 @@ from properties import const
 
 
 def get_drive_service(bot, message):
-    DB.create_table_if_not_exists()
-    user = DB.create_user_if_not_exists(message.from_user.id)
+    db.create_table_if_not_exists()
+    user = db.create_user_if_not_exists(message.from_user.id)
     try:
         credentials = Credentials.new_from_json(user.google_disk_credentials)
     except JSONDecodeError as err:

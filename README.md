@@ -1,5 +1,5 @@
 ### Telegram Email Messaging Bot (EBot)
-The goal of this bot is to send any forwarded to him
+The goal of this bot is to send any forwarded to it
 messages onto given email whilst providing info about sender,
 such as date/time of writing, chat and, of course,
 the original message.
