@@ -10,7 +10,7 @@ def _verification_code(bot, flow):
         db.create_table_if_not_exists()
         db.create_user_if_not_exists(message.from_user.id, do_fetch=False)
         credentials = flow.step2_exchange(message.text).to_json()
-        update_single_field(bot, message, credentials, "google_disk_credentials", const('botHumanGDCredentials'))
+        update_single_field(bot, message, credentials, "storage_google_drive_credentials", const('botHumanGDCredentials'))
     return update
 
 

@@ -3,26 +3,61 @@ from sqlite3 import Cursor
 from database.interface import Database, User
 import sqlite3
 
+CREATE_TABLE_SQL: str | None = None
+CREATE_USER_SQL: tuple[str, tuple] | None = None
+
+PY2SQL = {
+    'int': 'INT',
+    'str': 'TEXT'
+}
+
+
+def _unfold_annotations(field: str, ty: type) -> dict[str, type]:
+    if PY2SQL.get(ty.__name__) is not None:
+        return {field: ty}
+    if field != "":
+        field += '_'
+    result = {}
+    for subfield, subty in ty.__dict__['__annotations__'].items():
+        result.update(_unfold_annotations(field + subfield, subty))
+    return result
+
+
+def _dataclass_from_sql(dataclass: type, sql: list):
+    sql.reverse()
+    result = []
+    for field, ty in dataclass.__dict__['__annotations__'].items():
+        if PY2SQL.get(ty.__name__) is not None:
+            result.append(sql.pop())
+            continue
+        result.append(_dataclass_from_sql(ty, sql))
+    return dataclass(*result)
+
+
+UFIELDS = _unfold_annotations("", User)
+
 
 class SQLiteDB(Database):
-    pyTy2sqlTy = {
-        'int': 'INT',
-        'str': 'TEXT'
-    }
-
     @staticmethod
     def create_table_if_not_exists():
-        fields = ', '.join([f'{field} {SQLiteDB.pyTy2sqlTy[value.__name__]}{" PRIMARY KEY" if field == "uid" else ""}'
-                            for field, value in SQLiteDB.ufields.items()])
-        SQLiteDB._mutate(f"CREATE TABLE IF NOT EXISTS {const('dbTableName')}({fields});")
+        global CREATE_TABLE_SQL
+        if CREATE_TABLE_SQL is None:
+            fields = ', '.join(
+                [f'{field} {PY2SQL[value.__name__]}{" PRIMARY KEY" if field == "uid" else ""}'
+                 for field, value in UFIELDS.items()])
+            CREATE_TABLE_SQL = f"CREATE TABLE IF NOT EXISTS {const('dbTableName')}({fields});"
+        SQLiteDB._mutate(CREATE_TABLE_SQL)
 
     @staticmethod
     def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
+        global CREATE_USER_SQL
         if (fetched := SQLiteDB.fetch_user(uid)) is None:
-            fields, values = zip(*[(field, ty()) for field, ty in SQLiteDB.ufields.items() if field != 'uid'])
-            placeholders = ('?,' * len(SQLiteDB.ufields))[:-1]
-            SQLiteDB._mutate(f"INSERT INTO {const('dbTableName')} (uid, {', '.join(fields)}) VALUES({placeholders});",
-                             (uid, *values))
+            if CREATE_USER_SQL is None:
+                fields, values = zip(*[(field, ty()) for field, ty in UFIELDS.items() if field != 'uid'])
+                placeholders = ('?,' * len(UFIELDS))[:-1]
+                CREATE_USER_SQL = f"INSERT INTO {const('dbTableName')}" \
+                                  f" (uid, {', '.join(fields)}) VALUES({placeholders});", values
+            SQLiteDB._mutate(CREATE_USER_SQL[0], (uid, *CREATE_USER_SQL[1]))
             if do_fetch:
                 return SQLiteDB.fetch_user(uid)
         if do_fetch:
@@ -30,6 +65,8 @@ class SQLiteDB(Database):
 
     @staticmethod
     def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
+        SQLiteDB.create_table_if_not_exists()
+        SQLiteDB.create_user_if_not_exists(uid)
         update = ", ".join([(field + ' = ' + '"' + value.replace('"', '""') + '"') for field, value in kwargs.items()])
         SQLiteDB._mutate(f'UPDATE {const("dbTableName")} SET {update} WHERE uid = ?', (uid,))
         if do_fetch:
@@ -37,9 +74,10 @@ class SQLiteDB(Database):
 
     @staticmethod
     def fetch_user(uid: int) -> User | None:
+        SQLiteDB.create_table_if_not_exists()
         if (fetched := SQLiteDB._fetch(f"SELECT * FROM {const('dbTableName')} WHERE uid=?", (uid,)).fetchone()) is None:
             return
-        return User(*fetched)
+        return _dataclass_from_sql(User, list(fetched))
 
     @staticmethod
     def _mutate(request: str, *args, **kwargs):

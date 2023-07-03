@@ -1,4 +1,4 @@
 from commands.__helper import getter
 
 
-command = getter('google_disk_folder_id', 'botHumanGDFolderID')
+command = getter('storage_google_drive_folder_id', 'botHumanGDFolderID')

@@ -2,17 +2,27 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
+class GoogleDrive:
+    credentials: str
+    folder_id: str
+
+
+@dataclass(frozen=True)
+class CloudStorage:
+    google_drive: GoogleDrive
+    # Name of the preferred cloud storage
+    preferred: str
+
+
+@dataclass(frozen=True)
 class User:
     # Primary key
     uid: int
     email: str
-    google_disk_credentials: str
-    google_disk_folder_id: str
+    storage: CloudStorage
 
 
 class Database:
-    ufields = User.__dict__['__annotations__']
-
     @staticmethod
     def create_table_if_not_exists():
         raise NotImplementedError

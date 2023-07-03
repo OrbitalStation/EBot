@@ -10,7 +10,7 @@ def _folder_id_wrap(_update):
 
 
 command = setter(
-    "google_disk_folder_id",
+    "storage_google_drive_folder_id",
     "botHumanGDFolderID",
     extra_info="botSetGDFolderIDExtraInfoCmd",
     update_decorator=_folder_id_wrap
