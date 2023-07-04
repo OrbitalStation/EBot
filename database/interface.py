@@ -1,13 +1,35 @@
 from dataclasses import dataclass
+from storage.configurable import configurable
+from storage.google_drive.setcredentials import set_credentials
+from storage.google_drive.setfolderid import setfolderid
 
 
 @dataclass(frozen=True)
+@configurable
+class Credentials:
+    value: str
+    __on_set__ = set_credentials
+
+
+@dataclass(frozen=True)
+@configurable
+class FolderID:
+    value: str
+
+    @staticmethod
+    def __on_set__(bot, message, _):
+        setfolderid(bot, message)
+
+
+@dataclass(frozen=True)
+@configurable
 class GoogleDrive:
-    credentials: str
-    folder_id: str
+    credentials: Credentials
+    folder_id: FolderID
 
 
 @dataclass(frozen=True)
+@configurable
 class CloudStorage:
     google_drive: GoogleDrive
     # Name of the preferred cloud storage
@@ -15,6 +37,7 @@ class CloudStorage:
 
 
 @dataclass(frozen=True)
+@configurable
 class User:
     # Primary key
     uid: int
@@ -24,25 +47,9 @@ class User:
 
 class Database:
     @staticmethod
-    def create_table_if_not_exists():
+    def update_user(uid: int, **fields):
         raise NotImplementedError
 
     @staticmethod
-    def create_user_if_not_exists(uid: int, do_fetch: bool = True) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def update_user(uid: int, do_fetch: bool = True, **kwargs) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def fetch_user(uid: int) -> User | None:
-        raise NotImplementedError
-
-    @staticmethod
-    def _mutate(request: str, *args, **kwargs):
-        raise NotImplementedError
-
-    @staticmethod
-    def _fetch(request: str, *args, **kwargs):
+    def fetch_user(uid: int) -> User:
         raise NotImplementedError

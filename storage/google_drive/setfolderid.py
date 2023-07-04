@@ -9,7 +9,7 @@ def _folder_id_wrap(_update):
     return inner
 
 
-command = setter(
+setfolderid = setter(
     "storage_google_drive_folder_id",
     "botHumanGDFolderID",
     extra_info="botSetGDFolderIDExtraInfoCmd",

@@ -1,7 +1,7 @@
 from database import db
 from commands import handle_unknown_command
 from e_mail.send import send
-from google_drive.upload_from_message import upload_from_message
+from storage.upload_from_message import upload_from_message
 from properties import const
 
 

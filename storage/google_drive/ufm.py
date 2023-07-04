@@ -1,19 +1,18 @@
 import os
-from os.path import exists, isdir
 import tempfile
+from os.path import exists, isdir
 from telebot.types import Message
 from telebot import TeleBot
-from google_drive.upload_raw_file import upload_raw_file
+from storage.google_drive.upload_raw_file import upload_raw_file
 from e_mail import create_title_for_email_and_attachment
 from convert_time_from_unix import convert
 from properties import const
 
 
-def upload_from_message(bot: TeleBot, message: Message):
+def upload_from_message(bot: TeleBot, message: Message) -> int | None:
     """ Uploads content from message to Google Drive.
     bot: the bot
     message: message with photo or document
-    **kwargs: custom filename or description for file
     Returns: id of the uploaded file
     """
     if message.content_type in ['document', 'audio', 'voice', 'video', 'photo']:

@@ -1,15 +1,14 @@
 import mimetypes
 import googleapiclient
 from database import db
-from google_drive.service import get_drive_service
+from storage.google_drive.service import get_drive_service
 from googleapiclient.errors import HttpError
 from properties import const
 
 
 def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot'):
-    db.create_table_if_not_exists()
-    bot_folder_id = db.create_user_if_not_exists(message.from_user.id)\
-        .google_disk_folder_id
+    bot_folder_id = db.fetch_user(message.from_user.id)\
+        .storage.google_drive.folder_id
 
     if (service := get_drive_service(bot, message)) is None:
         # TODO send_message

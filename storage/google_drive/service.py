@@ -7,10 +7,9 @@ from properties import const
 
 
 def get_drive_service(bot, message):
-    db.create_table_if_not_exists()
-    user = db.create_user_if_not_exists(message.from_user.id)
+    user = db.fetch_user(message.from_user.id)
     try:
-        credentials = Credentials.new_from_json(user.google_disk_credentials)
+        credentials = Credentials.new_from_json(user.storage.google_drive.credentials.value)
     except JSONDecodeError as err:
         bot.send_message(message.chat.id, const("botUserInvalidCredentialsError") % str(err))
         return

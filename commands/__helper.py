@@ -1,12 +1,11 @@
 from properties import const
-from database import db
 
 
 def getter(field: str, name_key: str):
     def inner(bot, message):
+        from database import db
         name = const(name_key)
-        db.create_table_if_not_exists()
-        user = db.create_user_if_not_exists(message.from_user.id)
+        user = db.fetch_user(message.from_user.id)
         value = getattr(user, field)
         if value == "":
             bot.send_message(message.chat.id, const('botUserGetterHasNoPropertyCmd') % name)
@@ -33,15 +32,12 @@ def user_answered(bot, update, message, name):
         elif answer.content_type == "document":
             pass
         update(answer)
-
     return hdl
 
 
 def update_single_field(bot, message, value, field_name, field_human_name):
-    if (updated := db.update_user(message.from_user.id, **{field_name: value})) is None:
-        #TODO send_message
-        bot.send_message(message.chat.id, "//MAKE ERROR TEXT PLEASE//")
-        return
+    from database import db
+    db.update_user(message.from_user.id, **{field_name: value})
     bot.send_message(message.chat.id, const("botUserSetterSuccessCmd") % field_human_name + ' ' + value)
 
 
@@ -55,11 +51,8 @@ def setter(field: str, name_key: str, *, extra_info: str | None = None, update_d
             update = update_decorator(update)
 
         name = const(name_key)
-        db.create_table_if_not_exists()
-        db.create_user_if_not_exists(message.from_user.id, do_fetch=False)
 
         message = bot.send_message(message.chat.id, const("botUserSetterAskCmd") % name)
-
         if extra_info is not None:
             message = bot.send_message(message.chat.id, const(extra_info))
 

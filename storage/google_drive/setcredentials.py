@@ -1,21 +1,20 @@
 import oauth2client.client
-from commands.__helper import user_answered, update_single_field
 from properties import const
-from google_drive.flow import get_flow
-from database import db
+from storage.google_drive.flow import get_flow
 
 
-def _verification_code(bot, flow):
+def _verification_code(bot, flow, path):
     def update(message):
-        db.create_table_if_not_exists()
-        db.create_user_if_not_exists(message.from_user.id, do_fetch=False)
+        from commands.__helper import update_single_field
+        path.append("value")
         credentials = flow.step2_exchange(message.text).to_json()
-        update_single_field(bot, message, credentials, "storage_google_drive_credentials", const('botHumanGDCredentials'))
+        update_single_field(bot, message, credentials, "_".join(path), "Google Drive Credentials")
     return update
 
 
-def _cs(bot):
+def _cs(bot, path):
     def update(message):
+        from commands.__helper import user_answered
         if message.content_type == "text":
             flow = get_flow(bot, message, message.text, const("googleOauth2Scope"))
         elif message.content_type == "document":
@@ -31,13 +30,14 @@ def _cs(bot):
         authorize_url = flow.step1_get_authorize_url()
         bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo3") + ' ' + authorize_url)
         message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo4"))
-        bot.register_next_step_handler(message, user_answered(bot, _verification_code(bot, flow), message,
-                                                              const("botHumanGDCredentials")))
+        bot.register_next_step_handler(message, user_answered(bot, _verification_code(bot, flow, path), message,
+                                                              const("botHumanGDClientSecrets")))
     return update
 
 
-def command(bot, message):
+def set_credentials(bot, message, path):
+    from commands.__helper import user_answered
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo0"))
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1"))
-    bot.register_next_step_handler(message, user_answered(bot, _cs(bot), message,
+    bot.register_next_step_handler(message, user_answered(bot, _cs(bot, path), message,
                                                           const("botHumanGDClientSecrets")))
