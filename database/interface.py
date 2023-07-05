@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from storage.configurable import configurable
 from storage.google_drive.setcredentials import set_credentials
 from storage.google_drive.setfolderid import setfolderid
+from storage.yandex_disk.setapptoken import set_app_token
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,26 @@ class FolderID:
 
 @dataclass(frozen=True)
 @configurable
+class FolderName:
+    value: str
+
+
+@dataclass(frozen=True)
+@configurable
+class ApplicationToken:
+    value: str
+    __on_set__ = set_app_token
+
+
+@dataclass(frozen=True)
+@configurable
+class YandexDisk:
+    folder_name: FolderName
+    token: ApplicationToken
+
+
+@dataclass(frozen=True)
+@configurable
 class GoogleDrive:
     credentials: Credentials
     folder_id: FolderID
@@ -32,6 +53,7 @@ class GoogleDrive:
 @configurable
 class CloudStorage:
     google_drive: GoogleDrive
+    yandex_disk: YandexDisk
     # Name of the preferred cloud storage
     preferred: str
 

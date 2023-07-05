@@ -24,6 +24,7 @@ def user_answered(bot, update, message, name):
             answer.text = answer.text.strip()
             if answer.text.startswith('/'):
                 from commands import execute_command
+                bot.callback_query_handlers.clear()
                 execute_command(bot, answer)
                 return
         elif answer.content_type == "photo":

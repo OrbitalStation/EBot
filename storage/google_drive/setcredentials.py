@@ -6,9 +6,8 @@ from storage.google_drive.flow import get_flow
 def _verification_code(bot, flow, path):
     def update(message):
         from commands.__helper import update_single_field
-        path.append("value")
         credentials = flow.step2_exchange(message.text).to_json()
-        update_single_field(bot, message, credentials, "_".join(path), "Google Drive Credentials")
+        update_single_field(bot, message, credentials, "_".join(path), const("botHumanGDCredentials"))
     return update
 
 
@@ -38,6 +37,6 @@ def _cs(bot, path):
 def set_credentials(bot, message, path):
     from commands.__helper import user_answered
     bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo0"))
-    bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1"))
+    message = bot.send_message(message.chat.id, const("botSetGDCredentialsExtraInfo1"))
     bot.register_next_step_handler(message, user_answered(bot, _cs(bot, path), message,
                                                           const("botHumanGDClientSecrets")))

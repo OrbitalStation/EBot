@@ -6,9 +6,8 @@ from googleapiclient.errors import HttpError
 from properties import const
 
 
-def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot'):
-    bot_folder_id = db.fetch_user(message.from_user.id)\
-        .storage.google_drive.folder_id
+def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot') -> str | None:
+    bot_folder_id = db.fetch_user(message.from_user.id).storage.google_drive.folder_id.value
 
     if (service := get_drive_service(bot, message)) is None:
         # TODO send_message
@@ -35,10 +34,13 @@ def upload_raw_file(bot, message, filepath, title, description='Uploaded by Emai
         file_title = new_file.get('name')
         service.close()
         if file_title == title:
-            bot.send_message(message.chat.id, const("GDFileUploadSuccess"))
-            return new_file.get('id')
+            bot.send_message(message.chat.id, const("FileUploadSuccess"))
+            return const("googleDiskFilePrefix") + new_file.get('id')
         else:
             bot.send_message(message.chat.id, const("GDFileUploadMaybeError") + f" {file_title} ~:~ {title}")
     except HttpError as err:
-        # TODO(developer) - Handle errors from drive API.
-        bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))
+        if "File not found" in str(err):
+            bot.send_message(message.chat.id, const("GDFileUploadFolderNotExist"))
+        else:
+            # TODO(developer) - Handle errors from drive API.
+            bot.send_message(message.chat.id, const("GDFileUploadCreateError") + ' ' + str(err))

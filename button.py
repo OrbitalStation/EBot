@@ -1,11 +1,9 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from copy import deepcopy
 
 
 def _cb(bot, message, unique, callback):
     def inner(query):
         if not query.data.startswith(unique):
-            print(bot.callback_query_handlers)
             return
         callback(bot, message, query.data[len(unique):])
         bot.callback_query_handlers.pop(0)

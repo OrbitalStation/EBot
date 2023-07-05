@@ -22,10 +22,10 @@ def listener(cb):
 def attachment_listener(name: str):
     @listener
     def inner(bot, message):
-        if (file_id := upload_from_message(bot, message)) is None:
+        if (file_url := upload_from_message(bot, message)) is None:
             return
         caption = message.caption if message.caption else ""
-        text = caption + '<br>' + const(name) + ' ' + const("googleDiskFilePrefix") + file_id
+        text = caption + '<br>' + const(name) + ' ' + file_url
         if send(bot, message, db.fetch_user(message.from_user.id).email, text):
             bot.send_message(message.from_user.id, const("botMessageSentToEmailLis"))
     return inner
