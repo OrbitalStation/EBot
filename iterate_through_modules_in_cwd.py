@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def iterate(file):
-    def inner(cb):
+    def inner_decorator(cb):
         cwd = Path(file).parent.resolve()
 
         for path in listdir(cwd):
@@ -12,4 +12,4 @@ def iterate(file):
                 continue
             path = path[:path.rfind(".")]
             cb(path, import_module('.' + path, package=cwd.stem))
-    return inner
+    return inner_decorator

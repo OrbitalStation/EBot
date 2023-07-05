@@ -8,6 +8,14 @@ It can also automatically upload attachments(photo, docs,
 audio, etc.) onto given Google Drive or Yandex Disk
 and provide link in the email.
 
+### How to use the bot
+There is an instance of the bot that is running 24/7 on a remote server.
+
+Link: https://t.me/emailosbot.
+
+Please message `/start` command to the bot,
+and he will give you the instructions.
+
 ### Deploy instructions
 1. Download python3 libraries declared in `requirements.txt`
 

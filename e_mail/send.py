@@ -44,7 +44,7 @@ def _get_chat_and_sender(message: Message) -> tuple[str, str]:
         # Channel
         return message.forward_from_chat.title, message.forward_signature or "Аноним 🦹"
     elif message.forward_sender_name:
-        # IDK wtf is that but this pops up sometimes
+        # IDK wtf is that but it pops up sometimes
         return "Неизвестный чат", message.forward_sender_name
     else:
         # Unknown

@@ -15,5 +15,5 @@ def register_all_listeners(bot):
             return _listeners[lis](bot, message)
         return hd
 
-    for lisne in _listeners.keys():
-        bot.message_handler(content_types=[lisne])(handler(lisne))
+    for listener in _listeners.keys():
+        bot.message_handler(content_types=[listener])(handler(listener))
