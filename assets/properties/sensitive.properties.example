@@ -1,9 +1,24 @@
 # Contains sensitive data
 
-telebotToken=<your Telegram bot token(obtained from BotFather)>
+telebotToken="your Telegram bot token(obtained from BotFather)"
 
+# Whether or not do you want to login to the email
+# You may want to `false` it since some agents do not require
+#   to login and use other security methods
 botDoLoginEmail=true
-botEmail=<emailBotWillSendMessagesFrom@you.com>
+botEmail="emailBotWillSendMessagesFrom@you.com"
 
 # Only used if `botDoLoginEmail` is true
-botEmailPassword=<passwordUsedToLoginToTheEmailAbove>
+botEmailPassword="passwordUsedToLoginToTheEmailAbove"
+
+yaDiskID="your Yandex Disk application ID"
+yaDiskClientSecrets="your Yandex Disk application client secrets"
+
+# Example: "smtp.yandex.ru" for @yandex.ru emails
+SMTPHost="the SMTP host the bot will try to login to e-mail through"
+
+# Example: 587 or (rarely) 25 for "smtp.yandex.ru" as a host
+SMTPPort="the port for the host"
+
+# Whether or not do you want to use TLS
+SMTPDoStartTLS=true

@@ -14,10 +14,9 @@ def send_raw(sender: str, sender_password: str, receiver: str, body: str, title:
     message.attach(MIMEText(body, 'html'))
 
     mail = smtplib.SMTP(const("SMTPHost"), const("SMTPPort"))
-    mail.ehlo()
     if const("SMTPDoStartTLS"):
         mail.starttls()
-        mail.ehlo()
+    mail.ehlo()
     if const("botDoLoginEmail"):
         mail.login(sender, sender_password)
 

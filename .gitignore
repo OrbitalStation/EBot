@@ -3,5 +3,6 @@
 venv
 __pycache__
 
+assets/tmp/*
 users.db
 sensitive.properties

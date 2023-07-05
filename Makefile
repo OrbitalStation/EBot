@@ -1,0 +1,2 @@
+deleteTmpFiles:
+	@rm assets/tmp/*
