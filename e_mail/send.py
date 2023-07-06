@@ -1,14 +1,15 @@
 import smtplib
 
-from telebot.types import Message
+from telebot.types import Message, MessageEntity
 from telebot import TeleBot
 from convert_time_from_unix import convert
 from properties import const
 from e_mail import create_title_for_email_and_attachment
 from .send_raw import send_raw
+from .text2html import text2html
 
 
-def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
+def send(bot: TeleBot, message: Message, email: str, caption: str, entities: list[MessageEntity] | None) -> bool:
     chat, sender = _get_chat_and_sender(message)
     time = convert(message.forward_date)
     body = f"""
@@ -19,7 +20,7 @@ def send(bot: TeleBot, message: Message, email: str, caption: str) -> bool:
         <p><b>Время написания:</b> <i>{time}</i></p>
         <b>Оригинальное сообщение:</b>
         <br>
-        <i>{caption}</i>
+        <i>{text2html(caption, entities)}</i>
         </body></html>
         """
     try:

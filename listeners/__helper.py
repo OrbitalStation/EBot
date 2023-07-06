@@ -26,6 +26,6 @@ def attachment_listener(name: str):
             return
         caption = message.caption if message.caption else ""
         text = caption + '<br>' + const(name) + ' ' + file_url
-        if send(bot, message, db.fetch_user(message.from_user.id).email, text):
+        if send(bot, message, db.fetch_user(message.from_user.id).email, text, message.entities):
             bot.send_message(message.from_user.id, const("botMessageSentToEmailLis"))
     return inner
