@@ -19,13 +19,12 @@ def listener(cb):
     return inner
 
 
-def attachment_listener(name: str):
+def attachment_listener():
     @listener
     def inner(bot, message):
         if (file_url := upload_from_message(bot, message)) is None:
             return
-        caption = message.caption if message.caption else ""
-        text = caption + '<br>' + const(name) + ' ' + file_url
-        if send(bot, message, db.fetch_user(message.from_user.id).email, text, message.entities):
+        if send(bot, message, db.fetch_user(message.from_user.id).email, message.caption if message.caption else "",
+                const("botAttachmentUploadedToCloudStorage") + ' ' + file_url, message.caption_entities):
             bot.send_message(message.from_user.id, const("botMessageSentToEmailLis"))
     return inner

@@ -1,4 +1,4 @@
 from listeners.__helper import attachment_listener
 
 
-listener = attachment_listener("botPhotoSendToGDLis")
+listener = attachment_listener()

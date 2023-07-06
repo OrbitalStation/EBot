@@ -9,18 +9,23 @@ from .send_raw import send_raw
 from .text2html import text2html
 
 
-def send(bot: TeleBot, message: Message, email: str, caption: str, entities: list[MessageEntity] | None) -> bool:
+def send(bot: TeleBot, message: Message, email: str, caption: str, extra_caption: str, entities: list[MessageEntity] | None) -> bool:
     chat, sender = _get_chat_and_sender(message)
+    chat = f"<p><b>Чат:</b> <i>{chat}</i></p>" if chat is not None else ""
+    sender = f"<p><b>Отправитель:</b> <i>{sender}</i></p>" if sender is not None else ""
     time = convert(message.forward_date)
+    caption = text2html(caption, entities)
     body = f"""
         <html><head></head><body>
         <b>ВАЖНОЕ - Вы отметили данное сообщение</b>
-        <p><b>Чат:</b> <i>{chat}</i></p>
-        <p><b>Отправитель:</b> <i>{sender}</i></p>
+        {chat}
+        {sender}
         <p><b>Время написания:</b> <i>{time}</i></p>
         <b>Оригинальное сообщение:</b>
         <br>
-        <i>{text2html(caption, entities)}</i>
+        <pre>{caption}</pre>
+        <br>
+        <i>{extra_caption}</i>
         </body></html>
         """
     try:
@@ -37,16 +42,20 @@ def send(bot: TeleBot, message: Message, email: str, caption: str, entities: lis
         return False
 
 
-def _get_chat_and_sender(message: Message) -> tuple[str, str]:
+def _get_chat_and_sender(message: Message) -> tuple[str | None, str | None]:
     if message.forward_from:
         # Chat
         return message.chat.first_name, message.forward_from.first_name + f' (@{message.forward_from.username})'
     elif message.forward_from_chat:
-        # Channel
-        return message.forward_from_chat.title, message.forward_signature or "Аноним 🦹"
+        if message.forward_signature:
+            # Channel
+            return message.forward_from_chat.title, message.forward_signature
+        else:
+            # Personal
+            return None, message.forward_from_chat.title
     elif message.forward_sender_name:
         # IDK wtf is that but it pops up sometimes
-        return "Неизвестный чат", message.forward_sender_name
+        return None, message.forward_sender_name
     else:
         # Unknown
-        return "", ""
+        return None, None
