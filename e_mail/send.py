@@ -23,7 +23,7 @@ def send(bot: TeleBot, message: Message, email: str, caption: str, extra_caption
         <p><b>Время написания:</b> <i>{time}</i></p>
         <b>Оригинальное сообщение:</b>
         <br>
-        <pre>{caption}</pre>
+        <pre style="font-size:18px;">{caption}</pre>
         <br>
         <i>{extra_caption}</i>
         </body></html>
