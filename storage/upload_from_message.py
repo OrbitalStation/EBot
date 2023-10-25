@@ -61,10 +61,14 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
     tmp.seek(0)
     tmp.write(downloaded_file)
     tmp.close()
-    if raw_sender.list_files_or_can_duplicate is None:
-        raise ValueError(message)
-        title = create_title_for_email(00000, convert(message.forward_date))
-    else:
+
+    try:
+        title = file.file_name
+    except AttributeError:
+        title = message.content_type.capitalize()
+    title = create_title_for_email(title, convert(message.forward_date))
+
+    if raw_sender.list_files_or_can_duplicate is not None:
         maximum = 0
         if (lst := raw_sender.list_files_or_can_duplicate(bot, message)) is None:
             return
@@ -73,7 +77,8 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
                 maximum = max(int(file), maximum)
             except ValueError:
                 pass
-        title = str(maximum + 1)
+        title = str(maximum + 1).zfill(4) + title
+
     returned = raw_sender.callback(bot, message, tmp.name, title)
     os.unlink(tmp.name)
     return returned
