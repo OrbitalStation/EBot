@@ -36,9 +36,10 @@ def upload_from_message(bot: TeleBot, message: Message) -> Optional[str]:
 
 
 def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[str]:
-    """ Uploads content from message to Google Drive.
+    """ Uploads content from message to cloud storage.
     bot: the bot
     message: message with photo or document
+    raw_sender: and interface of the cloud storage
     Returns: id of the uploaded file
     """
     if message.content_type in ['document', 'audio', 'voice', 'video', 'photo']:
@@ -61,7 +62,8 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
     tmp.write(downloaded_file)
     tmp.close()
     if raw_sender.list_files_or_can_duplicate is None:
-        title = create_title_for_email(convert(message.forward_date))
+        raise ValueError(message)
+        title = create_title_for_email(00000, convert(message.forward_date))
     else:
         maximum = 0
         if (lst := raw_sender.list_files_or_can_duplicate(bot, message)) is None:
