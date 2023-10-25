@@ -77,7 +77,7 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
                 maximum = max(int(file), maximum)
             except ValueError:
                 pass
-        title = str(maximum + 1).zfill(4) + title
+        title = str(maximum + 1).zfill(4) + ' ' + title
 
     returned = raw_sender.callback(bot, message, tmp.name, title)
     os.unlink(tmp.name)
