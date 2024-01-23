@@ -74,7 +74,7 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
             return
         for file in lst:
             try:
-                maximum = max(int(file), maximum)
+                maximum = max(get_integer_prefix_if_any(file), maximum)
             except ValueError:
                 pass
         title = str(maximum + 1).zfill(4) + ' ' + title
@@ -82,3 +82,12 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
     returned = raw_sender.callback(bot, message, tmp.name, title)
     os.unlink(tmp.name)
     return returned
+
+
+def get_integer_prefix_if_any(s: str) -> Optional[int]:
+    found = len(s)
+    for idx, ch in enumerate(s):
+        if not ch.isdigit():
+            found = idx
+            break
+    return int(s[:found])
