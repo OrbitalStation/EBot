@@ -4,6 +4,7 @@ from database import db
 from storage.google_drive.service import get_drive_service
 from googleapiclient.errors import HttpError
 from properties import const
+from urllib.parse import quote
 
 
 def upload_raw_file(bot, message, filepath, title, description='Uploaded by EmailBot') -> str | None:
@@ -35,7 +36,7 @@ def upload_raw_file(bot, message, filepath, title, description='Uploaded by Emai
         service.close()
         if file_title == title:
             bot.send_message(message.chat.id, const("FileUploadSuccess"))
-            return const("googleDiskFilePrefix") + new_file.get('id')
+            return const("googleDiskFilePrefix") + quote(new_file.get('id'), safe="")
         else:
             bot.send_message(message.chat.id, const("GDFileUploadMaybeError") + f" {file_title} ~:~ {title}")
     except HttpError as err:

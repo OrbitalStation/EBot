@@ -1,6 +1,7 @@
 from yadisk.exceptions import ForbiddenError, ParentNotFoundError
 from storage.yandex_disk.service import get_yadisk
 from properties import const
+from urllib.parse import quote
 
 
 def upload_raw_file(bot, message, filepath, title) -> str | None:
@@ -18,5 +19,6 @@ def upload_raw_file(bot, message, filepath, title) -> str | None:
                          const("YDFileParentNotFoundError") % str(yandex_disk.folder_name.value) + ' ' + str(err))
         return
     bot.send_message(message.chat.id, const("FileUploadSuccess"))
-    return const("yandexDiskPrefix") + yandex_disk.folder_name.value + const("yandexDiskFileURLContinuation")\
-        + yandex_disk.folder_name.value + '%2F' + title
+    folder = quote(yandex_disk.folder_name.value, safe="")
+    return (const("yandexDiskPrefix") + folder
+            + const("yandexDiskFileURLContinuation") + folder + '%2F' + quote(title, safe=""))

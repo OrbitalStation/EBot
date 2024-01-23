@@ -3,7 +3,6 @@ from commands import handle_unknown_command
 from e_mail.send import send
 from storage.upload_from_message import upload_from_message, MaxFilenameTagWatcher
 from properties import const
-from urllib.parse import quote
 
 
 _MAX_FILENAME_TAG_WATCHER = MaxFilenameTagWatcher()
@@ -30,8 +29,7 @@ def attachment_listener():
 
         if (file_url := upload_from_message(bot, message, _MAX_FILENAME_TAG_WATCHER)) is None:
             return
-        extra_caption = const("botAttachmentUploadedToCloudStorage") + ' ' + quote(file_url)
         if send(bot, message, db.fetch_user(message.from_user.id).email, message.caption if message.caption else "",
-                extra_caption, message.caption_entities):
+                const("botAttachmentUploadedToCloudStorage") + ' ' + file_url, message.caption_entities):
             bot.send_message(message.from_user.id, const("botMessageSentToEmailLis"))
     return inner
