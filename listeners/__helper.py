@@ -1,8 +1,11 @@
 from database import db
 from commands import handle_unknown_command
 from e_mail.send import send
-from storage.upload_from_message import upload_from_message
+from storage.upload_from_message import upload_from_message, MaxFilenameTagWatcher
 from properties import const
+
+
+_MAX_FILENAME_TAG_WATCHER = MaxFilenameTagWatcher()
 
 
 def listener(cb):
@@ -22,7 +25,9 @@ def listener(cb):
 def attachment_listener():
     @listener
     def inner(bot, message):
-        if (file_url := upload_from_message(bot, message)) is None:
+        global _MAX_FILENAME_TAG_WATCHER
+
+        if (file_url := upload_from_message(bot, message, _MAX_FILENAME_TAG_WATCHER)) is None:
             return
         if send(bot, message, db.fetch_user(message.from_user.id).email, message.caption if message.caption else "",
                 const("botAttachmentUploadedToCloudStorage") + ' ' + file_url, message.caption_entities):

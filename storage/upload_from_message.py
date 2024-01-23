@@ -9,9 +9,10 @@ from storage.google_drive.upload_raw_file import upload_raw_file as gd
 from storage.yandex_disk.upload_raw_file import upload_raw_file as yd
 from storage.yandex_disk.list_files import list_files as ydlist
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 from telebot import TeleBot
 from telebot.types import Message
+from threading import Lock
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -26,16 +27,26 @@ RAW = {
 }
 
 
-def upload_from_message(bot: TeleBot, message: Message) -> Optional[str]:
+@dataclass(init=False)
+class MaxFilenameTagWatcher:
+    lock: Any
+    maximum: int
+
+    def __init__(self):
+        self.lock = Lock()
+        self.maximum = 0
+
+
+def upload_from_message(bot: TeleBot, message: Message, watcher: MaxFilenameTagWatcher) -> Optional[str]:
     try:
         raw_sender = RAW[db.fetch_user(message.from_user.id).storage.preferred]
     except KeyError:
         bot.send_message(message.chat.id, const("botHelpGoogleDiskCmd"))
         return
-    return _upload(bot, message, raw_sender)
+    return _upload(bot, message, raw_sender, watcher)
 
 
-def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[str]:
+def _upload(bot: TeleBot, message: Message, raw_sender: RawSender, watcher: MaxFilenameTagWatcher) -> Optional[str]:
     """ Uploads content from message to cloud storage.
     bot: the bot
     message: message with photo or document
@@ -69,15 +80,17 @@ def _upload(bot: TeleBot, message: Message, raw_sender: RawSender) -> Optional[s
     title = create_title_for_email(title, convert(message.forward_date))
 
     if raw_sender.list_files_or_can_duplicate is not None:
-        maximum = 0
-        if (lst := raw_sender.list_files_or_can_duplicate(bot, message)) is None:
-            return
-        for file in lst:
-            try:
-                maximum = max(get_integer_prefix_if_any(file), maximum)
-            except ValueError:
-                pass
-        title = str(maximum + 1).zfill(4) + ' ' + title
+        with watcher.lock:
+            maximum = watcher.maximum
+            if (lst := raw_sender.list_files_or_can_duplicate(bot, message)) is None:
+                return
+            for file in lst:
+                try:
+                    maximum = max(get_integer_prefix_if_any(file), maximum)
+                except ValueError:
+                    pass
+            watcher.maximum = maximum + 1
+            title = str(watcher.maximum).zfill(4) + ' ' + title
 
     returned = raw_sender.callback(bot, message, tmp.name, title)
     os.unlink(tmp.name)
